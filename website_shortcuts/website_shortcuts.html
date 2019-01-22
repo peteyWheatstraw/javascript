@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Website Shortcuts</title>
+  <!-- <link href="style.css" rel="stylesheet" /> -->
+
+
+  <script type="text/javascript">
+
+    function store_select_focus(){
+        if (document.getElementById("store_select_search").value=="SEARCH TERM") {
+          document.getElementById("store_select_search").value='';
+        }
+    }
+
+    function test(){
+      var instoreInput=document.getElementById("store_select_instore_checkbox");
+
+      alert(instoreInput.checked);
+    }
+
+
+
+    var store_objs=[
+    {
+      name:"homeDepot",
+      basicUrl:"http://www.homedepot.com",
+      url_parts:["https://www.homedepot.com/b/Pick-Up-Today/N-5yc1vZ1z175a5/Ntk-semanticsearch/Ntt-","___searchTerm","?NCNI-5&browsestoreoption=1&storeSelection=","___multipleSingleStrings"
+      ],
+      url_multi_store_breaker:"",
+      local_stores:[
+        {name:"patchogue",url_text_to_add:"1258"},
+        {name:"bayshore",url_text_to_add:"1211"},
+        {name:"bellport",url_text_to_add:"8958"}
+      ]
+
+    },{
+      name:"walmart",
+      basicUrl:"http://ww.walmart.com",
+      url_parts:["https://www.walmart.com/search/?cat_id=0&facet=pickup_and_delivery%3AFREE+Pickup+Today&query=","___searchTerm","&stores=","___singleMultipleString"],
+      url_multi_store_breaker:"%2C",
+      local_stores:[
+        {name:"islandia",url_text_to_add:"2917"},
+        {name:"commack",url_text_to_add:"5202"},
+        {name:"centerreach",url_text_to_add:"2286"}
+        ]
+    }];
+
+
+    function store_select_search_button(){
+      
+      var searchTerm=document.getElementById("store_select_search").value;
+      var store_selection=document.getElementById("store_select").value;
+      var use_in_store=document.getElementById("store_select_instore_checkbox").checked;
+      var selectedStores=[];
+      var urls_to_open=[];
+      var url_string="";
+
+      //generate inStores
+
+      var possibleSelectedStores = document.getElementsByClassName("test");
+      for (var i = 0; i < possibleSelectedStores.length; i++) {
+        if (possibleSelectedStores[i].checked==true){
+          selectedStores.push(possibleSelectedStores[i]);
+        }
+      }
+      console.log("selectedStores is ",selectedStores);
+      console.log("length is ",selectedStores.length);
+
+
+      if (store_selection=="homeDepot" || store_selection=="walmart") {
+
+        //FIND SPECIFIC STORE OBJECT
+        for (var i = 0; i < store_objs.length; i++) {
+          if (store_objs[i].name==store_selection){
+            var this_specific_store=store_objs[i];
+          }
+        }
+
+        console.log("this specific store name is "+this_specific_store.name);
+
+        if (use_in_store==false) {
+          url_to_open=this_specific_store.basicUrl;
+        } else {
+          for (var i = 0; i < this_specific_store.url_parts.length; i++) {
+            var this_url_part=this_specific_store.url_parts[i];
+            
+            if (this_url_part=="___singleMultipleString") {
+              for (var j = 0; j < this_specific_store.local_stores.length; j++) {
+                url_to_open=url_to_open + this_specific_store.local_stores[j].url_text_to_add;
+                if (j<this_specific_store.local_stores.length-1) {
+                  url_to_open=url_to_open+this_specific_store.url_multi_store_breaker;
+                }
+              }
+            } 
+            else if(this_url_part=="___multipleSingleStrings"){
+              url_to_open=url_to_open+this_specific_store.local_stores[0].url_text_to_add;
+            }
+            else if(this_url_part=="___searchTerm"){
+              url_to_open=url_to_open+searchTerm;
+            } 
+            else {
+              url_to_open=url_to_open+this_url_part;
+            }
+          }
+        }
+        console.log("urls to open are ",urls_to_open);
+        // window.open(url_to_open, store_selection);
+
+      }
+
+    }
+
+    function show_available_local_stores(){
+      var local_stores_list=document.getElementById("local_stores_list");
+      var store_selection=document.getElementById("store_select").value;
+
+      //clear the list
+      local_stores_list.innerHTML="";
+
+      //construct innerhtml string
+      var newInnerhtml="";
+      for (var i = store_objs.length - 1; i >= 0; i--) {
+        if (store_objs[i].name==store_selection) {
+          for (var j = 0; j < store_objs[i].local_stores.length; j++) {
+            var local_store_name = store_objs[i].local_stores[j].name;
+            newInnerhtml=newInnerhtml+"<div><input type='checkbox' class='test' name='"+local_store_name+"'> <label>"+local_store_name+"</label></div>";
+          }
+        }
+      }
+
+      local_stores_list.innerHTML=newInnerhtml;
+
+
+
+
+    }
+
+  </script>
+
+
+</head  >
+  <body>
+
+    <div>
+      <input type="text" id="store_select_search" onfocus="store_select_focus()" value="SEARCH TERM">
+      <select id="store_select" onchange="show_available_local_stores()">
+        <option value="homeDepot"> Home Depot </option>
+        <option value="walmart"> Walmart </option>
+      </select>
+      <input type="checkbox" id="store_select_instore_checkbox" checked=true>
+      <label> instore</label>
+      <button onclick="store_select_search_button()">SEARCH</button>
+      <fieldset>
+        <legend id="store_select_local_stores">Choose Which Stores</legend>
+        <div id="local_stores_list">
+          <div><input type="checkbox" name="testy"> <label>testy</label></div>
+          <div><input type="checkbox" name="testy2"> <label>testy2</label></div>
+        </div>
+      </fieldset>
+    </div>
+
+    <div>
+      <button onclick="show_available_local_stores()">TEST</button>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,22 @@
+
+
+store objects
+
+  {
+    storeName:"kmart",
+    basicUrl:"http://kmart.com",
+    urls:{
+      baseAddress:"",
+      urlKeyValues:[{
+        localStores:{
+          urlKeyValueStr="storeFind",
+          urlValues:[
+            {
+              localStoreName:"bohemia",
+              urlValue:"8023"
+            },
+          ]
+        }
+      }]
+    }
+  }

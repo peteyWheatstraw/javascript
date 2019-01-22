@@ -1,0 +1,32 @@
+bohemia
+
+  https://www.kmart.com/search=hose?unitNo=3862
+
+farmingville
+
+  https://www.kmart.com/search=hose?unitNo=4871
+
+
+
+JOANNs does not allow store selection in url
+
+
+commack
+  https://www.joann.com/search?q=needle#q=needle&prefn1=how-to-get-it&prefn2=prod_type&prefv1=Available%20In-Store&prefv2=Product&addShipToHomeConditions=false
+
+  https://www.joann.com/stores
+
+
+bestbuy
+
+bohemia
+
+https://www.bestbuy.com/site/searchpage.jsp?_dyncharset=UTF-8&cp=1&id=pcat17071&iht=y&keys=keys&ks=960&list=n&qp=storepickupstores_facet%3DStore~442&sc=Global&st=hose&type=page&usc=All%20Categories
+
+again
+
+https://www.bestbuy.com/site/searchpage.jsp?_dyncharset=UTF-8&cp=1&id=pcat17071&iht=y&keys=keys&ks=960&list=n&qp=storepickupstores_facet%3DStore%20Availability%20-%20In%20Store%20Pickup~442&sc=Global&st=hose&type=page&usc=All%20Categories
+
+patch
+
+https://www.bestbuy.com/site/searchpage.jsp?_dyncharset=UTF-8&cp=1&id=pcat17071&iht=y&keys=keys&ks=960&list=n&qp=storepickupstores_facet%3DStore%20Availability%20-%20In%20Store%20Pickup~824&sc=Global&st=hose&type=page&usc=All%20Categories

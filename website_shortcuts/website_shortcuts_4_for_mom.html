@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Website Shortcuts</title>
+  <!-- <link href="style.css" rel="stylesheet" /> -->
+  <style type="text/css">
+  .hidden {
+    display: : none;
+  }
+  .more_local_stores_link{
+    float:right;
+  }
+  </style>
+
+  <script type="text/javascript" src="store_objects.js"></script>
+  <!-- <script type="text/javascript" src=""></script> -->
+
+  <script type="text/javascript">
+    var defaults={
+      "selectedStores":["walmart","homedepot","amazon"],
+      "selectedLocalStores":[{
+        "walmart":["1111"],
+        "homedepot":["1234"]
+      }]
+    };
+
+
+
+    var store_objs=[
+    {
+      storeName:"homeDepot",
+      basicUrl:"http://www.homedepot.com",
+      url_findMoreLocalStores:"https://www.homedepot.com/l/search/1258/full/?lat=40.52497517207139&lng=-72.87931266015623&radius=50",
+      url_localStores:["https://www.homedepot.com/b/Pick-Up-Today/N-5yc1vZ1z175a5/Ntk-semanticsearch/Ntt-","___searchTerm","?NCNI-5&browsestoreoption=1&storeSelection=","___selectedLocalStoreText"
+      ],
+      multiplePages:true,
+      url_local_stores_breaker:"",
+      local_stores:[
+        {name:"patchogue",url_text_to_add:"1258"},
+        {name:"bayshore",url_text_to_add:"1211"},
+        {name:"bellport",url_text_to_add:"8958"}
+      ]
+
+    },{
+      storeName:"walmart",
+      basicUrl:"http://ww.walmart.com",
+      url_findMoreLocalStores:"",
+      url_localStores:["https://www.walmart.com/search/?cat_id=0&facet=pickup_and_delivery%3AFREE+Pickup+Today&query=","___searchTerm","&stores=","___selectedLocalStoreText"],
+      multiplePages:false,
+      url_local_stores_breaker:"%2C",
+      local_stores:[
+        {name:"islandia",url_text_to_add:"2917"},
+        {name:"commack",url_text_to_add:"5202"},
+        {name:"centerreach",url_text_to_add:"2286"}
+        ]
+    },{
+      storeName:"kmart",
+      basicUrl:"http://ww.kmart.com",
+      url_findMoreLocalStores:"https://www.kmart.com/stores.html",
+      url_localStores:["https://www.kmart.com/search=","___searchTerm","?","___selectedLocalStoreText"],
+      multiplePages:true,
+      url_local_stores_breaker:"",
+      local_stores:[
+        {name:"bohemia",url_text_to_add:"unitNo=3862"},
+        {name:"farmingville",url_text_to_add:"unitNo=4871"}
+      ]
+    },{
+      storeName:"amazon",
+      basicUrl:"http://ww.amazon.com",
+      url_findMoreLocalStores:"",
+      url_localStores:["https://www.amazon.com/s?url=search-alias%3Daps&field-keywords=","___searchTerm"],
+      multiplePages:true,
+      url_local_stores_breaker:"",
+      local_stores:[]
+    },{
+      storeName:"ebay",
+      basicUrl:"http://ww.ebay.com",
+      url_findMoreLocalStores:"",
+      url_localStores:["https://www.ebay.com/sch/i.html?_from=R40&_nkw=","___searchTerm","&LH_BIN=1&_sop=15&_oac=1"],
+      multiplePages:true,
+      url_local_stores_breaker:"",
+      local_stores:[]
+    }
+    ];
+
+    function searchTermFocus(){
+        if (document.getElementById("searchTerm").value=="SEARCH TERM") {
+          document.getElementById("searchTerm").value='';
+        }
+    }
+
+    function init(){
+
+      var storesSelectHTML="";
+      for (var i = 0; i < store_objs.length; i++) {
+        storesSelectHTML=storesSelectHTML + "<input type='checkbox' class='storeNames' onclick='updateLocalStores(this)' name='" + store_objs[i].storeName + "'><label>"+ store_objs[i].storeName +"   </label>";
+      }
+
+      document.getElementById("storesToSearch").innerHTML=storesSelectHTML;
+
+      createLocalStoresHTML();
+    }
+
+
+    function getSelectedStores(){
+      //generate inStores
+      var selectedStores=[];
+      var possibleSelectedStores = document.getElementsByClassName("storeNames");
+      for (var i = 0; i < possibleSelectedStores.length; i++) {
+        if (possibleSelectedStores[i].checked==true){
+          for (var j = 0; j < store_objs.length; j++) {
+            if (store_objs[j].storeName == possibleSelectedStores[i].name) {
+              selectedStores.push(store_objs[j]);
+            }
+          }
+        }
+      }
+
+      return selectedStores;
+    }
+
+
+    function getSelectedLocalStores(){
+      var selectedStores=getSelectedStores();
+      var selectedLocalStores={};
+      var className='';
+      for (var i = 0; i < selectedStores.length; i++) {
+        var thisSelectedStore=selectedStores[i];
+        
+        selectedLocalStores[thisSelectedStore.storeName]=[];
+
+        var thisLocalStores=document.getElementsByClassName("localStore_"+thisSelectedStore.storeName);
+
+        if (thisLocalStores.length>0) {
+
+          for (var j = 0; j < thisLocalStores.length; j++) {
+
+            if (thisLocalStores[j].checked==true) {
+              var thisSelectedLocalStoreName=thisLocalStores[j].name;
+              selectedLocalStores[thisSelectedStore.storeName].push(thisSelectedLocalStoreName)
+            }
+          }
+        }
+      }
+      console.log("selectedLocalStores is ",selectedLocalStores);
+      return selectedLocalStores;
+    }
+
+    function createLocalStoresHTML(){
+      var innerHTMLstr='';
+
+      for (var i = 0; i < store_objs.length; i++) {
+        var thisStore=store_objs[i];
+        var storeName = thisStore.storeName;
+        var thisLocalStores=thisStore.local_stores;
+        if (thisLocalStores.length>0) {
+          innerHTMLstr=innerHTMLstr+"<fieldset><legend> select local stores for "+storeName+"</legend>"
+          for (var j = 0; j < thisLocalStores.length; j++) {
+            innerHTMLstr=innerHTMLstr+"<input type='checkbox' class='localStore_"+storeName+"' name='"+thisLocalStores[j].name+"'><label> "+thisLocalStores[j].name+"  </label>";
+          }
+          if (thisStore.url_findMoreLocalStores.length>0) {
+            innerHTMLstr=innerHTMLstr+"<a class='more_local_stores_link' target='_blank' href='"+thisStore.url_findMoreLocalStores+"' >find more stores </a>";
+          }
+          innerHTMLstr=innerHTMLstr+"</fieldset>";
+        }
+      }
+      document.getElementById("localStores").innerHTML=innerHTMLstr;
+    }
+
+
+    function toggleLocalStores(){
+      var showLocalStores = document.getElementById("store_select_instore_checkbox").checked;
+      var localStoresField= document.getElementById("localStores");
+      if (showLocalStores==true) {
+        localStoresField.hidden=false;
+      } else {
+        localStoresField.hidden=true;
+      }
+    }
+
+    function generateURLS(){
+
+      var selectedStores=getSelectedStores();
+      var selectedLocalStores=getSelectedLocalStores();
+      
+      var searchTerm=document.getElementById("searchTerm").value;
+      var use_in_store=document.getElementById("store_select_instore_checkbox").checked;
+      var urls_to_open=[];
+      var selectedStore;
+
+      console.log('selected stores is ', selectedStores);
+      console.log("selectedLocalStores is ", selectedLocalStores);
+
+      function updateUrlsToOpen(textStr, thisURLS){
+        for (var i = 0; i < thisURLS.length; i++) {
+          thisURLS[i]=thisURLS[i]+textStr;
+        }
+      }
+
+      for (var i = 0; i < selectedStores.length; i++) {
+        
+        var thisStore=selectedStores[i];
+
+        var thisStoreLocalNames=selectedLocalStores[thisStore.storeName];
+        var thisStoreURLmaker=thisStore.url_localStores;
+        var thisGeneratedURLS=[];
+
+        if (thisStoreLocalNames.length==0) {
+          thisGeneratedURLS.push("");
+        } else {
+          for (var j = 0; j < thisStoreLocalNames.length; j++) {
+            thisGeneratedURLS.push("");
+          }
+        }
+
+
+        for (var k = 0; k < thisStoreURLmaker.length; k++) {
+
+          var thisURLpart=thisStoreURLmaker[k];
+          
+          if (thisURLpart=="___selectedLocalStoreText") {
+            for (var m = 0; m < thisStoreLocalNames.length; m++) {
+              for (var n = 0; n < thisStore.local_stores.length; n++) {
+                if (thisStore.local_stores[n].name==thisStoreLocalNames[m]) {
+                  thisGeneratedURLS[m]=thisGeneratedURLS[m]+thisStore.local_stores[n].url_text_to_add;
+                  // updateUrlsToOpen(thisStore.local_stores[n].url_text_to_add,thisGeneratedURLS);
+                }
+              }
+            }
+          }
+          else if(thisURLpart=="___searchTerm"){
+            updateUrlsToOpen(searchTerm,thisGeneratedURLS);
+          } 
+          else {
+            updateUrlsToOpen(thisURLpart,thisGeneratedURLS);
+          }
+        }
+      urls_to_open.push(thisGeneratedURLS);
+      console.log("thisGeneratedURLS is ", thisGeneratedURLS);
+      //   urls_to_open.push(thisGeneratedURLS,thisGeneratedURLS);
+      // console.log("selected stores are ", selectedStores);
+      // console.log("selectedLocalStores are ", selectedLocalStores);
+      // console.log("")
+      // }
+      // return urls_to_open;
+      }
+
+      return urls_to_open;
+    // console.log("urls to open is ", urls_to_open);
+    }
+
+    function openGeneratedURLS(urlsToOpen){
+      for (var i = 0; i < urlsToOpen.length; i++) {
+        for (var j = 0; j < urlsToOpen[i].length; j++) {
+          window.open(urlsToOpen[i][j]);
+        }
+      }
+
+    }
+
+    function updateLocalStores(clickedStore){
+      var selectedStores=getSelectedStores();
+      if (clickedStore.checked==true) {
+      } else {
+      }
+    }
+
+    function testy(){
+      // getSelectedLocalStores();
+      var urls = generateURLS();
+      openGeneratedURLS(urls);
+    }
+
+  </script>
+
+</head>
+  <body onload="init()">
+
+    <div>
+      <input type="text" id="searchTerm" onfocus="searchTermFocus()" value="SEARCH TERM">
+      <input type="checkbox" id="store_select_instore_checkbox" checked=true onclick='toggleLocalStores()'>
+      <label> instore</label>
+    </div>
+    <fieldset>
+      <legend> select which stores to check</legend>
+      <span id="storesToSearch">
+<!--           <input type="checkbox" name="homedepot"><label>homedepot</label>
+        <input type="checkbox" name="walmart"><label>walmart</label> -->
+      </span>
+    </fieldset>
+    <div> <p> </p></div>
+    <span id="localStores">
+    </span>
+    <div>
+      <button onclick="testy()">TESTY</button>
+    </div>
+
+  </body>
+</html>

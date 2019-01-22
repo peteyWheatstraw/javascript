@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Website Shortcuts</title>
+  <!-- <link href="style.css" rel="stylesheet" /> -->
+  <style type="text/css">
+  .hidden {
+    display: : none;
+  }
+  .more_local_stores_link{
+    float:right;
+  }
+  </style>
+
+  <script type="text/javascript" src="store_objects.js"></script>
+  <!-- <script type="text/javascript" src=""></script> -->
+
+  <script type="text/javascript">
+
+    function searchTermFocus(){
+        if (document.getElementById("searchTerm").value=="SEARCH TERM") {
+          document.getElementById("searchTerm").value='';
+        }
+    }
+
+    function init(){
+
+      var storesSelectHTML="";
+      for (var i = 0; i < store_objs.length; i++) {
+        storesSelectHTML=storesSelectHTML + "<input type='checkbox' class='storeNames' onclick='displayLocalOptions()' name='" + store_objs[i].storeName + "' id='storeCheckBox_"+store_objs[i].storeName+"'><label>"+ store_objs[i].storeName +"   </label>";
+      }
+
+      document.getElementById("storesToSearch").innerHTML=storesSelectHTML;
+
+      createLocalStoresHTML();
+
+      // applyDefaults();
+
+      displayLocalOptions();
+    }
+
+
+    function getSelectedStores(){
+      //generate inStores
+      var selectedStores=[];
+      var possibleSelectedStores = document.getElementsByClassName("storeNames");
+      for (var i = 0; i < possibleSelectedStores.length; i++) {
+        if (possibleSelectedStores[i].checked==true){
+          for (var j = 0; j < store_objs.length; j++) {
+            if (store_objs[j].storeName == possibleSelectedStores[i].name) {
+              selectedStores.push(store_objs[j]);
+            }
+          }
+        }
+      }
+
+      return selectedStores;
+    }
+
+
+    function getSelectedLocalStores(){
+      var selectedStores=getSelectedStores();
+      var selectedLocalStores={};
+      var className='';
+      for (var i = 0; i < selectedStores.length; i++) {
+        var thisSelectedStore=selectedStores[i];
+        
+        selectedLocalStores[thisSelectedStore.storeName]=[];
+
+        var thisLocalStores=document.getElementsByClassName("localStore_"+thisSelectedStore.storeName);
+
+        if (thisLocalStores.length>0) {
+
+          for (var j = 0; j < thisLocalStores.length; j++) {
+
+            if (thisLocalStores[j].checked==true) {
+              var thisSelectedLocalStoreName=thisLocalStores[j].name;
+              selectedLocalStores[thisSelectedStore.storeName].push(thisSelectedLocalStoreName)
+            }
+          }
+        }
+      }
+      
+      return selectedLocalStores;
+    }
+
+    function createLocalStoresHTML(){
+      var innerHTMLstr='';
+
+      for (var i = 0; i < store_objs.length; i++) {
+        var thisStore=store_objs[i];
+        var storeName = thisStore.storeName;
+        var thisLocalStores=thisStore.local_stores;
+        if (thisLocalStores.length>0) {
+          innerHTMLstr=innerHTMLstr+"<fieldset class='localOptions' id='localOptions_"+storeName+"'><legend> select local stores for "+storeName+"</legend>"
+          for (var j = 0; j < thisLocalStores.length; j++) {
+            innerHTMLstr=innerHTMLstr+"<input type='checkbox' class='local_stores localStore_"+storeName+"' name='"+thisLocalStores[j].name+"'><label> "+thisLocalStores[j].name+"  </label>";
+          }
+          if (thisStore.url_findMoreLocalStores.length>0) {
+            innerHTMLstr=innerHTMLstr+"<a class='more_local_stores_link' target='_blank' href='"+thisStore.url_findMoreLocalStores+"' >find more stores </a>";
+          }
+          innerHTMLstr=innerHTMLstr+"</fieldset>";
+        }
+      }
+      document.getElementById("localStores").innerHTML=innerHTMLstr;
+    }
+
+
+    function toggleLocalStores(){
+      var showLocalStores = document.getElementById("store_select_instore_checkbox").checked;
+      var localStoresField= document.getElementById("localStores");
+      if (showLocalStores==true) {
+        localStoresField.hidden=false;
+      } else {
+        localStoresField.hidden=true;
+      }
+    }
+
+    function generateURLS(){
+
+      var selectedStores=getSelectedStores();
+      var selectedLocalStores=getSelectedLocalStores();
+      
+      var searchTerm=document.getElementById("searchTerm").value;
+      var use_in_store=document.getElementById("store_select_instore_checkbox").checked;
+      var urls_to_open=[];
+      var selectedStore;
+      var foundError=false;
+
+      
+      function updateUrlsToOpen(textStr, thisURLS){
+        for (var i = 0; i < thisURLS.length; i++) {
+          thisURLS[i]=thisURLS[i]+textStr;
+        }
+      }
+
+      for (var i = 0; i < selectedStores.length; i++) {
+        
+        var thisStore=selectedStores[i];
+
+        var thisStoreLocalNames=selectedLocalStores[thisStore.storeName];
+      
+        var thisStoreURLmaker=thisStore.url_localStores;
+        var thisGeneratedURLS=[];
+
+        if (thisStoreLocalNames.length==0 && thisStore.local_stores.length>0) {
+          var alertStr="no chosen local store for " + thisStore.storeName;
+          alert(alertStr);
+          foundError=true;
+          continue;
+        }
+
+        if (thisStoreLocalNames.length==0) {
+          thisGeneratedURLS.push("");
+        } else {
+          for (var j = 0; j < thisStoreLocalNames.length; j++) {
+            thisGeneratedURLS.push("");
+          }
+        }
+
+
+        for (var k = 0; k < thisStoreURLmaker.length; k++) {
+
+          var thisURLpart=thisStoreURLmaker[k];
+          
+          if (thisURLpart=="___selectedLocalStoreText") {
+            for (var m = 0; m < thisStoreLocalNames.length; m++) {
+              for (var n = 0; n < thisStore.local_stores.length; n++) {
+                if (thisStore.local_stores[n].name==thisStoreLocalNames[m]) {
+                  thisGeneratedURLS[m]=thisGeneratedURLS[m]+thisStore.local_stores[n].url_text_to_add;
+                  // updateUrlsToOpen(thisStore.local_stores[n].url_text_to_add,thisGeneratedURLS);
+                }
+              }
+            }
+          }
+          else if(thisURLpart=="___searchTerm"){
+            updateUrlsToOpen(searchTerm,thisGeneratedURLS);
+          } 
+          else {
+            updateUrlsToOpen(thisURLpart,thisGeneratedURLS);
+          }
+        }
+      urls_to_open.push(thisGeneratedURLS);
+      
+      }
+
+      return {"foundError":foundError,"urlsToOpen":urls_to_open};
+    }
+
+    function openGeneratedURLS(urlsToOpen){
+      for (var i = 0; i < urlsToOpen.length; i++) {
+        for (var j = 0; j < urlsToOpen[i].length; j++) {
+          window.open(urlsToOpen[i][j]);
+        }
+      }
+
+    }
+
+    function searchStores(){
+      var urlsObj = generateURLS();
+      if (urlsObj.foundError==false) {
+        openGeneratedURLS(urlsObj.urlsToOpen);
+      }    
+    }
+
+
+    function displayLocalOptions(){
+      // document.getElementsByClassName("localOptions_kmart")[0].hidden=false
+      var selectedStores=getSelectedStores();
+      var allLocalOptions=document.getElementsByClassName("localOptions");
+
+      for (var j = 0; j < allLocalOptions.length; j++) {
+        var thisStoresName=allLocalOptions[j].id.substring(13);
+        var isHidden=true;
+
+        for (var i = 0; i < selectedStores.length; i++) {
+          if (selectedStores[i].storeName==thisStoresName) {
+            var isHidden=false;
+          }
+        }  
+
+        allLocalOptions[j].hidden=isHidden;
+      }
+    }
+
+    function createDefaults(){
+      var defaults={
+      "selectedStores":["walmart","homedepot","amazon"],
+      "selectedLocalStores":{
+          "walmart":["commack"],
+          "homedepot":["bellport","bayshore"],
+          "amazon":[]
+        };
+      }
+
+      var selectedStores=getSelectedStores();
+      var defaultSelectedStores=[];
+      for (var i = 0; i < selectedStores.length; i++) {
+        defaultSelectedStores.push(selectedStores[i].storeName);
+      }
+
+      var defaultLocalSelectedStores=getSelectedLocalStores();
+
+      var defaults={"selectedStores":defaultSelectedStores,"selectedLocalStores":defaultLocalSelectedStores};
+    }
+
+    function saveDefaults(){
+
+    }
+
+    function applyDefaults(){
+      var defs=defaults;
+      var availableStoresCheckInputs=document.getElementsByClassName("storeNames");
+
+      
+      for (var j = 0; j < availableStoresCheckInputs.length; j++) {
+        var thisName=availableStoresCheckInputs[j].name;
+        var isChecked=false;
+        for (var i = 0; i < defs.selectedStores.length; i++) {
+          if(defs.selectedStores[i]==thisName){
+            isChecked=true;
+          }
+        }
+        availableStoresCheckInputs[j].checked=isChecked;
+      }
+
+      var availableLocalCheckInputs=document.getElementsByClassName('local_stores');
+      for (var i = 0; i < availableLocalCheckInputs.length; i++) {
+        var thisStoresName=availableLocalCheckInputs[i].parentNode.id.substring(13);
+        var isChecked=false;
+
+        if (typeof(defs.selectedLocalStores[thisStoresName])!=='undefined') {
+          var thisLocalsName=availableLocalCheckInputs[i].name;
+          for (var j = 0; j < defs.selectedLocalStores[thisStoresName].length; j++) {
+            if (defs.selectedLocalStores[thisStoresName][j]==thisLocalsName) {
+              isChecked=true;
+            }
+          }
+        }
+
+        availableLocalCheckInputs[i].checked=isChecked;
+      }
+
+      
+    }
+
+  </script>
+
+</head>
+  <body onload="init()">
+
+    <br>
+    <br>
+    <div>
+      <span>Type what you want to search here -></span>
+      <input type="text" id="searchTerm" onfocus="searchTermFocus()" value="SEARCH TERM">
+      <span hidden="true">
+        <input type="checkbox" id="store_select_instore_checkbox" checked=true onclick='toggleLocalStores()'>
+        <label> instore</label>
+      </span>
+      <input type="checkbox" name="saveSettings">
+      <label> save Settings ?(uses cookies)</label>
+    </div>
+    <br>
+    <br>
+    <br>
+    <br>
+    <fieldset>
+      <legend align='center'> select which stores to check</legend>
+      <span id="storesToSearch">
+<!--           <input type="checkbox" name="homedepot"><label>homedepot</label>
+        <input type="checkbox" name="walmart"><label>walmart</label> -->
+      </span>
+    </fieldset>
+    <div> <p> </p></div>
+    <span id="localStores">
+    </span>
+    <div>
+      <button onclick="searchStores()"> Search! </button>
+    </div>
+
+  </body>
+</html>
